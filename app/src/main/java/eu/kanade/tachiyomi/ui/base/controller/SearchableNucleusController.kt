@@ -1,13 +1,18 @@
 package eu.kanade.tachiyomi.ui.base.controller
 
 import android.app.Activity
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.StyleSpan
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.SearchView
 import androidx.viewbinding.ViewBinding
+import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -55,6 +60,15 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
         searchView.queryTextEvents()
             .onEach {
                 val newText = it.queryText.toString()
+
+                // TO remove formatting from clipboard text #6495
+                val formattedQuery = removeSpan(SpannableString(newText))
+                val searchAutoComplete: SearchView.SearchAutoComplete = searchView.findViewById(
+                    R.id.search_src_text
+                )
+                searchAutoComplete.setText(formattedQuery)
+                // Resetting cursor position of search view
+                searchAutoComplete.setSelection(searchAutoComplete.text.length)
 
                 if (newText.isNotBlank() or acceptEmptyQuery()) {
                     if (it is QueryTextEvent.QuerySubmitted) {
@@ -133,6 +147,12 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
                 }
             }
         )
+    }
+
+    // To format the text
+    private fun removeSpan(spannable: Spannable): String {
+        spannable.setSpan(StyleSpan(Typeface.NORMAL), 0, spannable.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        return spannable.toString()
     }
 
     override fun onActivityResumed(activity: Activity) {
