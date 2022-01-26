@@ -3,8 +3,10 @@ package eu.kanade.tachiyomi.ui.base.controller
 import android.app.Activity
 import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.TextWatcher
 import android.text.style.StyleSpan
 import android.view.Menu
 import android.view.MenuInflater
@@ -57,18 +59,35 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
         searchItem.fixExpand(onExpand = { invalidateMenuOnExpand() })
         searchView.maxWidth = Int.MAX_VALUE
 
+        // TO remove formatting from clipboard text #6495
+        val searchAutoComplete: SearchView.SearchAutoComplete = searchView.findViewById(
+            R.id.search_src_text
+        )
+        searchAutoComplete.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // TODO("Not yet implemented")
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // TODO("Not yet implemented")
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                val spannable: Array<StyleSpan> = s!!.getSpans(
+                    0, 5,
+                    StyleSpan::class.java
+                )
+                if (spannable.isNotEmpty()) {
+                    for (i in spannable.indices) {
+                        s.removeSpan(spannable[i])
+                    }
+                }
+            }
+        })
+
         searchView.queryTextEvents()
             .onEach {
                 val newText = it.queryText.toString()
-
-                // TO remove formatting from clipboard text #6495
-                val formattedQuery = removeSpan(SpannableString(newText))
-                val searchAutoComplete: SearchView.SearchAutoComplete = searchView.findViewById(
-                    R.id.search_src_text
-                )
-                searchAutoComplete.setText(formattedQuery)
-                // Resetting cursor position of search view
-                searchAutoComplete.setSelection(searchAutoComplete.text.length)
 
                 if (newText.isNotBlank() or acceptEmptyQuery()) {
                     if (it is QueryTextEvent.QuerySubmitted) {
