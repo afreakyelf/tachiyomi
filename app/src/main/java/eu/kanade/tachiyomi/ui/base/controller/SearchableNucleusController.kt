@@ -1,11 +1,8 @@
 package eu.kanade.tachiyomi.ui.base.controller
 
 import android.app.Activity
-import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
-import android.text.Spannable
-import android.text.SpannableString
 import android.text.TextWatcher
 import android.text.style.StyleSpan
 import android.view.Menu
@@ -64,23 +61,17 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
             R.id.search_src_text
         )
         searchAutoComplete.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                // TODO("Not yet implemented")
-            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // TODO("Not yet implemented")
-            }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
-            override fun afterTextChanged(s: Editable?) {
-                val spannable: Array<StyleSpan> = s!!.getSpans(
-                    0, 5,
+            override fun afterTextChanged(editable: Editable) {
+                val spannable: Array<StyleSpan> = editable.getSpans(
+                    0, editable.length,
                     StyleSpan::class.java
                 )
-                if (spannable.isNotEmpty()) {
-                    for (i in spannable.indices) {
-                        s.removeSpan(spannable[i])
-                    }
+                spannable.forEachIndexed { index, _ ->
+                    editable.removeSpan(spannable[index])
                 }
             }
         })
@@ -166,12 +157,6 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
                 }
             }
         )
-    }
-
-    // To format the text
-    private fun removeSpan(spannable: Spannable): String {
-        spannable.setSpan(StyleSpan(Typeface.NORMAL), 0, spannable.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        return spannable.toString()
     }
 
     override fun onActivityResumed(activity: Activity) {
