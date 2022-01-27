@@ -56,7 +56,7 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
         searchItem.fixExpand(onExpand = { invalidateMenuOnExpand() })
         searchView.maxWidth = Int.MAX_VALUE
 
-        // TO remove formatting from clipboard text #6495
+        // Remove formatting from pasted text
         val searchAutoComplete: SearchView.SearchAutoComplete = searchView.findViewById(
             R.id.search_src_text
         )
@@ -66,13 +66,8 @@ abstract class SearchableNucleusController<VB : ViewBinding, P : BasePresenter<*
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(editable: Editable) {
-                val spannable: Array<StyleSpan> = editable.getSpans(
-                    0, editable.length,
-                    StyleSpan::class.java
-                )
-                spannable.forEachIndexed { index, _ ->
-                    editable.removeSpan(spannable[index])
-                }
+                editable.getSpans(0, editable.length, StyleSpan::class.java)
+                    .forEach { editable.removeSpan(it) }
             }
         })
 
